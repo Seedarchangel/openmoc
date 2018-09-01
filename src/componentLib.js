@@ -1,13 +1,14 @@
 import 'antd/dist/antd.css';
 import 'leaflet/dist/leaflet.css'
-import {Select, Button, Modal, InputNumber, Table, Divider, Tag} from 'antd';
+import {Select, Button, Modal, InputNumber, Table} from 'antd';
+import Plot from 'react-plotly.js';
 import React from 'react';
-import io from 'socket.io-client'
 import axios from 'axios';
 import TLEJS from 'tle.js'
-import {Map, TileLayer, Marker, Polyline, Popup} from 'react-leaflet';
+import {Map, TileLayer, Marker, Polyline, Tooltip} from 'react-leaflet';
 import L from 'leaflet'
 import jspredict from 'jspredict'
+import moment from 'moment'
 
 //import { Viewer, Entity } from "cesium-react";
 //import { Cartesian3 } from "cesium";
@@ -48,7 +49,9 @@ export class SatelliteSelect extends React.Component {
                 tle[value] = this.state.tles[value]
         })
         this.setState({selectedtles: tle},()=>{
+            updateOSMorbit()
             updatePasses(tle)
+            updateTimelinePasses(tle)
         })
 }
 
@@ -137,9 +140,11 @@ export class OSM extends React.Component {
         zoom: 1,
         position: [],
         orbits: [],
-        gs: ""
+        gs: "",
+        satinfos: []
         //child: child
 		}
+    updateOSMorbit = updateOSMorbit.bind(this)
 	}
 
   componentDidMount(){
@@ -156,6 +161,7 @@ export class OSM extends React.Component {
     var tleList = GetSelectedTles()
     var orbits = []
     var name = []
+    var satinfos = []
     var gs = [getGS().latitude, getGS().longitude]
     if(tleList!=[])
     {
@@ -165,12 +171,17 @@ export class OSM extends React.Component {
     tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
     var location = tlejs.getLatLon(tlestring)
     position.push(location)
+    var satinfo = tlejs.getSatelliteInfo(tlestring, new Date(), gs[0], gs[1], getGS().altitude)
+    satinfos.push(satinfo)
     name.push(key)
-    var orbit = tlejs.getGroundTrackLatLng(tlestring)[1]
-    orbits.push(orbit)
+   // var orbit = tlejs.getGroundTrackLatLng(tlestring)[1]
+   // if(typeof(orbit) == "undefined") {
+   //   orbit = tlejs.getGroundTrackLatLng(tlestring)
+   // }
+   // orbits.push(orbit)
 }
     }
-    this.setState({position: position, focus: focus, orbits: orbits, name: name, gs: gs})
+    this.setState({position: position, focus: focus, name: name, gs: gs, satinfos: satinfos})
     }
 
   render() {
@@ -179,14 +190,44 @@ export class OSM extends React.Component {
     const position = [this.state.lat, this.state.lng]
     return (
       <Map center={this.state.focus} zoom={1} style={{ width: '100%', height: '500px' }}>
+  
         <TileLayer
           attribution="&amp;copy <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Marker key= {Math.random()} icon={radarMarker} position={this.state.gs} className="myGS"/>
+        
         {this.state.position.map((position, idx) => 
         <Marker key= {Math.random()} icon={customMarker} position={position} className="mysat">
+        <Tooltip>{
+          this.state.name[idx]}
+          <br/>
+          {"Elevation: " +
+          this.state.satinfos[idx].elevation}
+          <br/>
+          {
+          "Azimuth: " + this.state.satinfos[idx].azimuth}
+          <br/>
+          {
+          "Distance: " + this.state.satinfos[idx].range  
+          }
+          <br/>
+          {
+          "Latitude: " + this.state.satinfos[idx].lat
+          }
+          <br/>
+          {
+          "Longitude: " + this.state.satinfos[idx].lng
+          }
+          <br/>
+          {
+          "Velocity: " + this.state.satinfos[idx].velocity
+          }
+          </Tooltip>
+
+
         </Marker>
+        
         
         
         
@@ -227,16 +268,19 @@ export class Passes extends React.Component {
 	}
 
   componentDidMount(){
-        console.log("in action")
 
   }
   
   componentWillUnmount() {
   }
 
+  showModal(value) {
+  }
 
   render() {
     return (
+    <div>
+       <Button>Refresh</Button>
           <Table dataSource={this.state.passes}>
       <Column
         title="Satellite"
@@ -249,7 +293,7 @@ export class Passes extends React.Component {
         key="start"
       />
       <Column
-        title="EOS Time"
+        title="LOS Time"
         dataIndex="end"
         key="end"
       />
@@ -268,13 +312,13 @@ export class Passes extends React.Component {
       key="action"
       render={(text, record) => (
         <span>
-          <a href="javascript:;">View Pass Trajectory</a>
-          <Divider type="vertical" />
-          <a href="javascript:;">Delete</a>
+          <Button onClick={this.showModal}>View Pass</Button>
         </span>
       )}
     />
   </Table>
+ 
+  </div>
     )
   }
 }
@@ -353,12 +397,11 @@ export class Location extends React.Component {
 
 
   render() {
+    
     return (
         <div>
-        <p>Your current location is {"\n"}
-            Latitude: {this.state.latitude} {"\n"}
-            Longitude: {this.state.longitude} {"\n"}
-            Altitude: {this.state.altitude} {"\n"}
+        <p fontSize={5}>Your current location is 
+            Latitude: {this.state.latitude} {", "} Longitude: {this.state.longitude} {", "} Elevation: {this.state.altitude} {" "}
             <Button onClick={this.showChange}>Change Location</Button>
             </p>
         
@@ -368,14 +411,137 @@ export class Location extends React.Component {
         onCancel={this.handleCancel}
         >
         Latitude: <InputNumber max={180} min={-180} onChange={this.changeLat} defaultValue={this.state.latitude}/> {"\n"}
-        Longitude:  <InputNumber max={90} min={0} onChange={this.changeLong} defaultValue={this.state.longitude}/>{"\n"}
-        Altitude: <InputNumber onChange={this.changeAlt} defaultValue={this.state.altitude}/> {"\n"}
+        Longitude:  <InputNumber max={90} min={-90} onChange={this.changeLong} defaultValue={this.state.longitude}/>{"\n"}
+        Elevation: <InputNumber onChange={this.changeAlt} defaultValue={this.state.altitude}/> {"\n"}
+    
         </Modal>
         </div>
     )
   }
 }
 
+export class Radar extends React.Component {
+	constructor(props) {
+		super(props)
+        //child.push(<Option key={"first"}>first</Option>)
+		this.state = {
+            location: "",
+            r: [],
+            theta: []
+        //child: child
+		}
+  }
+    componentDidMount(){
+    this.interval = setInterval(() => this.tick(), 1000);
+  }
+  
+  tick() {
+    var r = []
+    var theta = []
+    var gs = getGS()
+    var tles = GetSelectedTles()
+    for(var tle in tles) {
+    var tlestring = ""
+    var tlearray = tles[tle]
+    var tlestring = tle + "\n" + tlearray[0] + "\n" + tlearray[1]
+    var satInfo = tlejs.getSatelliteInfo(
+      tlestring,
+      new Date(),
+      gs.latitutde,
+      gs.longitude,
+      gs.altitude
+    )
+    if (satInfo.elevation > 0) {
+      r.push(satInfo.elevation)
+      theta.push(satInfo.azimuth)
+    }
+    
+  }
+  this.setState({r: r, theta: theta})
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
+  render() {
+    return (
+      <Plot
+        data={[
+          {
+            r: this.state.r,
+            theta: this.state.theta,
+            type: 'scatterpolar',
+            mode: 'markers',
+            marker: {color: 'blue', size: 5, opacity: 0.7},
+          },
+        ]}
+        layout={ {width: 1000, height: 600, title: 'Polar View', polar: {radialaxis: {range: [90, 0]}, angularaxis: {direction: "clockwise"}}} }
+      />
+    );
+  }
+}
+
+export class Timeline extends React.Component {
+	constructor(props) {
+		super(props)
+        //child.push(<Option key={"first"}>first</Option>)
+		this.state = {
+            passes: [],
+            data: [],
+            range: []
+        //child: child
+		}
+    updateTimelinePasses = updateTimelinePasses.bind(this)
+  }
+    componentDidMount(){
+      this.setState({range: [moment().format('YYYY-MM-DD HH:mm:ss'), moment().add(1, "days").format('YYYY-MM-DD HH:mm:ss')]})
+    //this.interval = setInterval(() => this.tick(), 1000);
+  }
+  
+  tick() {
+    var r = []
+    var theta = []
+    var gs = getGS()
+    var tles = GetSelectedTles()
+    for(var tle in tles) {
+    var tlestring = ""
+    var tlearray = tles[tle]
+    var tlestring = tle + "\n" + tlearray[0] + "\n" + tlearray[1]
+    var satInfo = tlejs.getSatelliteInfo(
+      tlestring,
+      new Date(),
+      gs.latitutde,
+      gs.longitude,
+      gs.altitude
+    )
+    if (satInfo.elevation > 0) {
+      r.push(satInfo.elevation)
+      theta.push(satInfo.azimuth)
+    }
+    
+  }
+  this.setState({r: r, theta: theta})
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
+  render() {
+    return (
+      <div>
+      <Button>Refresh</Button>
+      <Plot
+        data={
+          this.state.data
+        }
+        layout={ {width: 1000, height: 600, title: 'Satellite Timeline', xaxis: {type: 'date', range: this.state.range, rangeslider: {range: this.state.range}}} }
+      />
+      </div>
+    );
+  }
+}
 
 /*
 export class Cesium extends React.Component {
@@ -432,14 +598,13 @@ function updatePasses(tle) {
     var qth = getGS()
     var passes = []
     var qth = [qth.latitude, qth.longitude, qth.altitude]
-    var tle = '0 LEMUR-2 JEROEN\n1 40934U 15052E   15306.10048119  .00001740  00000-0  15647-3 0  9990\n2 40934   6.0033 141.2190 0010344 133.6141 226.4604 14.76056230  5130'
+    //var tle = '0 LEMUR-2 JEROEN\n1 40934U 15052E   15306.10048119  .00001740  00000-0  15647-3 0  9990\n2 40934   6.0033 141.2190 0010344 133.6141 226.4604 14.76056230  5130'
     var date = new Date()
     var interval = new Date()
     interval = (interval).setDate(date.getDate() + 10)
     //console.log(new Date(interval))
     var tles = GetSelectedTles()
     for (var key in tles) {
-        console.log("once")
         var tlestring = ""
         var tlearray = tles[key]
         tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
@@ -456,9 +621,52 @@ function updatePasses(tle) {
         passes.push(pass)
     })}
     }
-
     this.setState({passes: passes})
     
+    }
+}
+
+function updateTimelinePasses(tle) {
+      if(typeof this !== "undefined"){
+    var qth = getGS()
+    var passes = []
+    var qth = [qth.latitude, qth.longitude, qth.altitude]
+    //var tle = '0 LEMUR-2 JEROEN\n1 40934U 15052E   15306.10048119  .00001740  00000-0  15647-3 0  9990\n2 40934   6.0033 141.2190 0010344 133.6141 226.4604 14.76056230  5130'
+    var date = new Date()
+    var interval = new Date()
+    interval = (interval).setDate(date.getDate() + 10)
+    //console.log(new Date(interval))
+    var tles = GetSelectedTles()
+    
+    var data = []
+    var satNumber = 0
+    for (var key in tles) {
+        var tlestring = ""
+        var tlearray = tles[key]
+        tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
+        var passesList = jspredict.transits(tlestring, qth, date.getTime(), interval, 0, 10)
+        if(typeof passesList !== "undefined"){
+        var oneSat = {}
+        oneSat["orientation"] = "h"
+        oneSat["type"] = "bar"
+        oneSat["base"] = []
+        oneSat["x"] = []
+        oneSat["y"] = []
+        passesList.map((value, idx) => {
+        oneSat["base"].push(moment(value.start).format('YYYY-MM-DD HH:mm:ss'))
+        oneSat["y"].push(satNumber)
+        oneSat["x"].push(moment(value.end-value.start).utc().format('YYYY-MM-DD HH:mm:ss'))
+        oneSat["name"] = key
+
+    })}
+    satNumber = satNumber + 1
+    data.push(oneSat)
+    
+  }
+    var range = [moment().format('YYYY-MM-DD HH:mm:ss'), moment().add(1, "days").format('YYYY-MM-DD HH:mm:ss')]
+   //{type: 'bar', y: [1, 1, 1], x: [1, 2, 1], base: [0, 2, 5], orientation: "h"}
+    this.setState({passes: passes, range: range, data:data})
+
     }
 }
 
@@ -476,6 +684,26 @@ function msToHMS( ms ) {
 
     return hours+" hrs "+minutes+" mins "+Math.round(seconds * 100)/100+" seconds";
 }
+
+function updateOSMorbit() {
+    console.log("triggered OSM")
+    var tleList = GetSelectedTles()
+    var orbits = []
+    if(tleList!=[])
+    {
+    for (var key in tleList) {
+    var tlestring = ""
+    var tlearray = tleList[key]
+    tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
+    var orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())[1]
+    if(typeof(orbit) == "undefined") {
+      orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())
+    }
+    orbits.push(orbit)
+}
+    this.setState({orbits: orbits})
+}
+}
 /*export class EchoConsole extends React.Component{
   echo(text) {
     this.refs.console.log(text);
@@ -489,4 +717,20 @@ function msToHMS( ms ) {
             )
   }
 }*/
+function sec2dt(v) {
+  var MIN = 60
+  var HOUR = 60 * 60
+  
+  var h = Math.floor(v / HOUR)
+  var m =  Math.floor((v - (h * HOUR)) / MIN)
+  var s = Math.floor(v - (h * HOUR) - (m * MIN))
+
+  // you have to provide YYYY-MM-DD
+  // for plotly to understand it as a date
+  return `${h}:${pad(m)}:${pad(s)}`
+}
+
+function pad(v) {
+  return v < 10 ? '0' + v : String(v)
+}
 

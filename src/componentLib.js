@@ -1,11 +1,13 @@
 import 'antd/dist/antd.css';
-import 'leaflet/dist/leaflet.css'
-import {Select, Button, Modal, InputNumber, Table} from 'antd';
+import {leafletStyle} from 'leaflet/dist/leaflet.css'
+import {timelineStyle} from 'react-calendar-timeline/lib/Timeline.css'
+import {Select, Button, Modal, InputNumber, Table, message} from 'antd';
+import Timeline from 'react-calendar-timeline'
 import Plot from 'react-plotly.js';
 import React from 'react';
 import axios from 'axios';
 import TLEJS from 'tle.js'
-import {Map, TileLayer, Marker, Polyline, Tooltip} from 'react-leaflet';
+import {Map, TileLayer, Marker, Polyline, Tooltip, Circle} from 'react-leaflet';
 import L from 'leaflet'
 import jspredict from 'jspredict'
 import moment from 'moment'
@@ -16,6 +18,26 @@ import moment from 'moment'
 const { Column, ColumnGroup } = Table;
 const Option = Select.Option
 const tlejs = new TLEJS()
+
+export class Update extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+  updatetles() {
+    axios.post(`http://localhost:8080/api/updateTles`).then(res => {
+      if(res.data.status=="success"){
+        message.success("Update TLE successful!")
+      }
+      else {
+        message.error("Unable to Update TLE.")
+      }
+    })
+  }
+  render() {
+    return (<Button onClick={this.updatetles}>Update Norad TLEs</Button>)
+  }
+}
+
 export class SatelliteSelect extends React.Component {
 	constructor(props) {
 		super(props)
@@ -103,6 +125,7 @@ export class SatelliteSelect extends React.Component {
 	render(){
 		return (
 			<div>
+        <br/>
 				Category
         <br/>
             <Select
@@ -117,7 +140,7 @@ export class SatelliteSelect extends React.Component {
                 Satellite
         <br/>
             <Select
-                mode="tags"
+                mode="multiple"
                 style={{ width: '100%' }}
                 onChange={this.changeSatellite}
                 tokenSeparators={[',']}
@@ -162,6 +185,7 @@ export class OSM extends React.Component {
     var orbits = []
     var name = []
     var satinfos = []
+    var elevation = []
     var gs = [getGS().latitude, getGS().longitude]
     if(tleList!=[])
     {
@@ -169,8 +193,14 @@ export class OSM extends React.Component {
     var tlestring = ""
     var tlearray = tleList[key]
     tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
-    var location = tlejs.getLatLon(tlestring)
-    position.push(location)
+    //var location = tlejs.getLatLon(tlestring)
+    //console.log(location)
+    var singlePos = {}
+    var predicted = jspredict.observe(tlestring)
+    singlePos["lat"] = predicted.latitude
+    singlePos["lng"] = predicted.longitude
+    singlePos["altitude"] = predicted.altitude
+    position.push(singlePos)
     var satinfo = tlejs.getSatelliteInfo(tlestring, new Date(), gs[0], gs[1], getGS().altitude)
     satinfos.push(satinfo)
     name.push(key)
@@ -189,7 +219,8 @@ export class OSM extends React.Component {
     const radarMarker= L.icon({iconUrl: require("./radar.svg"), iconSize: [30, 30]})
     const position = [this.state.lat, this.state.lng]
     return (
-      <Map center={this.state.focus} zoom={1} style={{ width: '100%', height: '500px' }}>
+      <div className={leafletStyle}>
+      <Map center={this.state.focus} zoom={1} style={{ width: '100%', height: '650px' }}>
   
         <TileLayer
           attribution="&amp;copy <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
@@ -198,6 +229,8 @@ export class OSM extends React.Component {
         <Marker key= {Math.random()} icon={radarMarker} position={this.state.gs} className="myGS"/>
         
         {this.state.position.map((position, idx) => 
+        <div>
+        <Circle center={position} radius={Math.sqrt(position.altitude * 1000) * 3.57 * 1000}></Circle>
         <Marker key= {Math.random()} icon={customMarker} position={position} className="mysat">
         <Tooltip>{
           this.state.name[idx]}
@@ -228,7 +261,7 @@ export class OSM extends React.Component {
 
         </Marker>
         
-        
+        </div>
         
         
         )}
@@ -248,6 +281,7 @@ export class OSM extends React.Component {
 
 
       </Map>
+      </div>
     )
   }
 }
@@ -277,10 +311,14 @@ export class Passes extends React.Component {
   showModal(value) {
   }
 
+  refreshPasses(){
+    updatePasses(GetSelectedTles())
+  }
+
   render() {
     return (
     <div>
-       <Button>Refresh</Button>
+       <Button onClick={this.refreshPasses}>Refresh</Button>
           <Table dataSource={this.state.passes}>
       <Column
         title="Satellite"
@@ -288,14 +326,17 @@ export class Passes extends React.Component {
         key="satellite"
       />
       <Column
+        defaultSortOrder="ascend"
         title="AOS Time"
         dataIndex="start"
         key="start"
+        sorter= {(a, b) => new Date(a.start)-new Date(b.start)}
       />
       <Column
         title="LOS Time"
         dataIndex="end"
         key="end"
+        sorter= {(a, b) => new Date(a.end)-new Date(b.end)}
       />
     <Column
       title="Duration"
@@ -368,29 +409,25 @@ export class Location extends React.Component {
   }
   handleOK() {
     this.setState({
-        altitude: this.state.altitudeToChange,
-        latitude: this.state.latitudeToChange,
-        longitude: this.state.longitudeToChange,
         visible: false
     })
   }
   handleCancel() {
     this.setState({
         visible: false,
-        allowchange: false
     })
   }
 
   changeLat(value) {
-    this.setState({latitudeToChange: value})
+    this.setState({latitude: value})
   }
 
   changeLong(value) {
-    this.setState({longitudeToChange: value})
+    this.setState({longitude: value})
   }
 
   changeAlt(value) {
-    this.setState({altitudeToChange: value})
+    this.setState({altitude: value})
   }
 
   
@@ -402,7 +439,7 @@ export class Location extends React.Component {
         <div>
         <p fontSize={5}>Your current location is 
             Latitude: {this.state.latitude} {", "} Longitude: {this.state.longitude} {", "} Elevation: {this.state.altitude} {" "}
-            <Button onClick={this.showChange}>Change Location</Button>
+            <Button onClick={this.showChange}>Change Location</Button> <Update/>
             </p>
         
         <Modal
@@ -482,7 +519,7 @@ export class Radar extends React.Component {
   }
 }
 
-export class Timeline extends React.Component {
+export class TimelinePlotly extends React.Component {
 	constructor(props) {
 		super(props)
         //child.push(<Option key={"first"}>first</Option>)
@@ -492,7 +529,7 @@ export class Timeline extends React.Component {
             range: []
         //child: child
 		}
-    updateTimelinePasses = updateTimelinePasses.bind(this)
+    //updateTimelinePasses = updateTimelinePasses.bind(this)
   }
     componentDidMount(){
       this.setState({range: [moment().format('YYYY-MM-DD HH:mm:ss'), moment().add(1, "days").format('YYYY-MM-DD HH:mm:ss')]})
@@ -538,6 +575,45 @@ export class Timeline extends React.Component {
         }
         layout={ {width: 1000, height: 600, title: 'Satellite Timeline', xaxis: {type: 'date', range: this.state.range, rangeslider: {range: this.state.range}}} }
       />
+      </div>
+    );
+  }
+}
+
+
+export class Time extends React.Component {
+	constructor(props) {
+		super(props)
+    const groups = [{ id: 1, title: 'group 1' }, { id: 2, title: 'group 2' }]
+        //child.push(<Option key={"first"}>first</Option>)
+		this.state = {
+            passes: [],
+            data: [],
+            range: [],
+            groups:[],
+            items:[]
+		}
+    updateTimelinePasses = updateTimelinePasses.bind(this)
+  }
+    componentDidMount(){
+    updateTimelinePasses(GetSelectedTles())
+    //this.interval = setInterval(() => this.tick(), 1000);
+  }
+
+  refreshPasses(){
+    updateTimelinePasses(GetSelectedTles())
+  }
+
+  render() {
+    return (
+      <div className={timelineStyle}>
+      <Button onClick={this.refreshPasses}>Refresh</Button>
+      <Timeline
+      groups={this.state.groups}
+      items={this.state.items}
+      defaultTimeStart={moment()}
+      defaultTimeEnd={moment().add(24, 'hour')}
+    />
       </div>
     );
   }
@@ -640,6 +716,7 @@ function updateTimelinePasses(tle) {
     
     var data = []
     var satNumber = 0
+    var groups = []
     for (var key in tles) {
         var tlestring = ""
         var tlearray = tles[key]
@@ -647,25 +724,34 @@ function updateTimelinePasses(tle) {
         var passesList = jspredict.transits(tlestring, qth, date.getTime(), interval, 0, 10)
         if(typeof passesList !== "undefined"){
         var oneSat = {}
-        oneSat["orientation"] = "h"
-        oneSat["type"] = "bar"
-        oneSat["base"] = []
-        oneSat["x"] = []
-        oneSat["y"] = []
+        groups.push({id: satNumber, title: key})
+
+        //oneSat["orientation"] = "h"
+        //oneSat["type"] = "bar"
+        //oneSat["base"] = []
+        //oneSat["x"] = []
+        //oneSat["y"] = []
         passesList.map((value, idx) => {
-        oneSat["base"].push(moment(value.start).format('YYYY-MM-DD HH:mm:ss'))
-        oneSat["y"].push(satNumber)
-        oneSat["x"].push(moment(value.end-value.start).utc().format('YYYY-MM-DD HH:mm:ss'))
-        oneSat["name"] = key
+        var singlepass = {}
+        singlepass["id"] = Math.random()
+        singlepass["group"] = satNumber
+        singlepass["title"] = "p"
+        singlepass["start_time"] = moment(value.start)
+        singlepass["end_time"] = moment(value.end)
+        data.push(singlepass)
+        //oneSat["base"].push(moment(value.start).format('YYYY-MM-DD HH:mm:ss'))
+        //oneSat["y"].push(key)
+        //oneSat["x"].push(moment(value.end-value.start).utc().format('YYYY-MM-DD HH:mm:ss'))
+        //oneSat["name"] = key 
 
     })}
     satNumber = satNumber + 1
-    data.push(oneSat)
     
   }
-    var range = [moment().format('YYYY-MM-DD HH:mm:ss'), moment().add(1, "days").format('YYYY-MM-DD HH:mm:ss')]
+    console.log(groups)
+    console.log(data)
    //{type: 'bar', y: [1, 1, 1], x: [1, 2, 1], base: [0, 2, 5], orientation: "h"}
-    this.setState({passes: passes, range: range, data:data})
+    this.setState({passes: passes, groups: groups, items: data})
 
     }
 }

@@ -1,7 +1,7 @@
 import 'antd/dist/antd.css';
 import React, { Component } from 'react';
 import { Select, Tabs} from 'antd';
-import {SatelliteSelect, OSM, Passes, Location, Radar, Timeline} from "./componentLib"
+import {SatelliteSelect, OSM, Passes, Location, Radar, Time, Update} from "./componentLib"
 const TabPane = Tabs.TabPane;
 class App extends Component {
 
@@ -10,6 +10,7 @@ class App extends Component {
     return (
       <div className="App">
           <h1 className="App-title">Mission Control Center</h1>
+            
              
             <SatelliteSelect></SatelliteSelect>
             <Tabs defaultActiveKey="1" type="card">
@@ -19,14 +20,13 @@ class App extends Component {
               <TabPane tab="Polar View" key="2">
                   <Radar/>
               </TabPane>
-              <TabPane tab="Timeline" key="3" forceRender={true}>
-              <Timeline/>
+              <TabPane tab="Timeline" key="3">
+              <Time/>
               </TabPane>
 
               <TabPane tab="Upcoming Passes" key="4" forceRender={true}>
               <Passes/>
               </TabPane>
-              <TabPane tab="Ground Stations" key="5">GroundStation Configuration</TabPane>
             </Tabs>
             <Location/>
             <br/>

@@ -77,7 +77,7 @@
   "scripts": {
     "electron-pack": "build --c.extraMetadata.main=build/electron.js",
     "preelectron-pack": "npm run-script build",
-    "start": "concurrently --kill-others \"node scripts/start.js\" \"node src/server.js\"",
+    "start": "concurrently --kill-others \"node scripts/start.js\" \"node public/server.js\"",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom",
     "electron-dev": "concurrently \"BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\""

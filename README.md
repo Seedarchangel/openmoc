@@ -8,11 +8,11 @@ OpenMOC is a satellite tracking web application, built in React.
 #### Satellite Map
 ![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/map_2.png?raw=true)
 #### Polar View
-![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/polar_view.png)
-#### Major Shareholders
-![notebook-0](https://github.com/Seedarchangel/TuChart/blob/master/Example_Graphs/New_Top_10.gif?raw=true)
-#### Supports dragging and zooming
-![notebook-0](https://github.com/Seedarchangel/TuChart/blob/master/Example_Graphs/sample.gif)
+![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/polar_many.png)
+#### Upcoming Passes
+![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/passes.png)
+#### Sky at a Glance
+![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/timeline.png)
 
 ## Setup Instructions
 Install all necessary dependencies

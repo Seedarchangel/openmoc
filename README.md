@@ -30,6 +30,7 @@ Linux:
 
 #### The Hard Way:
 You will need node.js, npm and git installed.
+Clone this repository:
 ```git clone https://github.com/Seedarchangel/openmoc```
 
-Perform ```npm install``` in the project folder. To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 
+Then perform ```npm install``` in the project folder. To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 

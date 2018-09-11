@@ -89,4 +89,5 @@ Then perform ```npm install``` in the project folder to install all the node mod
 ## TODO:
 * Radio and Rotator Configurations
 * Celsium globe visualization
+* View trajectory of a particular pass
   

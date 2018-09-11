@@ -35,3 +35,58 @@ Clone this repository:
 ```git clone https://github.com/Seedarchangel/openmoc```
 
 Then perform ```npm install``` in the project folder. To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 
+
+## Openmoc Currently Supports:
+* Satellite Types(as cataloged by Celestrak)
+  * Cubesats
+  * Space Stations
+  * Beidou
+  * Amateur Satellites
+  * Argos Data Collection System
+  * Disaster Monitering
+  * Education
+  * Engineering
+  * Galileo
+  * Glonass Operational
+  * GlobalStar
+  * GOES
+  * Gorizont
+  * GPS Satellites
+  * IntelSat
+  * Iridium Debris
+  * Iridium Next
+  * Iridium
+  * Military
+  * Molniya
+  * Russia LEO Navigation
+  * Navy Navigation Satellite
+  * NOAA
+  * Orbcomm
+  * Other Communication Satellite
+  * PLANET
+  * Radar Calibration
+  * Raduga
+  * Earth Resources
+  * Search & Rescue
+  * Space & Earth Science
+  * SES
+  * Tracking and Data Relay Satellite System
+  * Last 30 Days Launches
+  * 100 (or so) Brightest
+  * Weather
+  * Experimental
+
+* Satellite Orbit Visualization
+  * Open Street Maps
+  * Groundstation Coordinate Configuration
+  
+* Upcoming Passes
+
+* Passes Timeline
+
+* Sky at a Glance
+
+## TODO:
+* Radio and Rotator Configurations
+* Celsium globe visualization
+  

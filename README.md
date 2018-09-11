@@ -18,9 +18,9 @@ OpenMOC is a satellite tracking web application. It supports visualization of sa
 #### Interactive Realtime Tracking
 ![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/move.gif)
 
-## Setup Instructions
+## Download
 #### The Easy Way:
-You can download the bundled application here. They are packaged in Electron and is identical to the web app.
+You can download the bundled application here. They are packaged in Electron and is identical to the web app. You do not need to install any additional dependencies.
 
 Windows:
 
@@ -29,3 +29,7 @@ Mac:
 Linux:
 
 #### The Hard Way:
+You will need node.js, npm and git installed.
+```git clone https://github.com/Seedarchangel/openmoc```
+
+Perform ```npm install``` in the project folder. To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 

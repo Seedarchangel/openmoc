@@ -23,11 +23,11 @@ OpenMOC is a satellite tracking web application written in ReactJS. It supports 
 #### The Easy Way:
 You can download the bundled application here. They are packaged in Electron and is identical to the web app. You do not need to install any additional dependencies.
 
-Windows:
+Windows: (Coming very soon)
 
-Mac:
+Mac: (Coming very soon)
 
-Linux:
+Linux: (Coming very soon)
 
 #### The Hard Way:
 You will need node.js, npm and git installed.

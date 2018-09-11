@@ -34,7 +34,7 @@ You will need node.js, npm and git installed.
 Clone this repository:
 ```git clone https://github.com/Seedarchangel/openmoc```
 
-Then perform ```npm install``` in the project folder. To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 
+Then perform ```npm install``` in the project folder to install all the node module dependencies(Thanks, javascript). To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 
 
 ## Openmoc Currently Supports:
 * Satellite Types(as cataloged by Celestrak)

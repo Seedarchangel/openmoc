@@ -23,11 +23,11 @@ OpenMOC is a satellite tracking web application written in ReactJS. It supports 
 #### The Easy Way:
 You can download the bundled application here. They are packaged in Electron and is identical to the web app. You do not need to install any additional dependencies.
 
-Windows:
+Windows: (Coming very soon)
 
-Mac:
+Mac: (Coming very soon)
 
-Linux:
+Linux: (Coming very soon)
 
 #### The Hard Way:
 You will need node.js, npm and git installed.
@@ -40,6 +40,8 @@ Then perform ```npm install``` in the project folder to install all the node mod
 openMOC acquires satellite two-line-element data from NORAD and Celestrak. Two-Line-Element files can be used with SGP-4 propagations to predict satellite orbit with decent accuracy.
 
 This application uses TLE.js and JSPredict libraries for SGP-4 predictions. Although the orbits plotted by openmoc match up with commerical sites like https://www.heavens-above.com/ , accuracy of javascript SGP-4 implementations have not been verified. For serious mission planning, it is still recommended to use legacy software like [Gpredict](https://github.com/csete/gpredict)
+
+All of the computation takes place in the client(broswer). This might be changed in the future.
 
 ## Openmoc Currently Supports:
 * Satellite Types(as cataloged by Celestrak)
@@ -95,4 +97,6 @@ This application uses TLE.js and JSPredict libraries for SGP-4 predictions. Alth
 * Radio and Rotator Configurations
 * Celsium globe visualization
 * View trajectory of a particular pass
-  
+ 
+## Contact:
+rzli2@illinois.edu

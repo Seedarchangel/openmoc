@@ -15,9 +15,17 @@ OpenMOC is a satellite tracking web application. It supports visualization of sa
 ![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/passes.png)
 #### Timeline
 ![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/timeline.png)
-#### Realtime Tracking
+#### Interactive Realtime Tracking
 ![notebook-0](https://github.com/Seedarchangel/openmoc/blob/master/examples/move.gif)
 
 ## Setup Instructions
+#### The Easy Way:
+You can download the bundled application here. They are packaged in Electron and is identical to the web app.
 
+Windows:
 
+Mac:
+
+Linux:
+
+#### The Hard Way:

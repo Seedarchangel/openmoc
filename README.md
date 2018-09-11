@@ -41,6 +41,8 @@ openMOC acquires satellite two-line-element data from NORAD and Celestrak. Two-L
 
 This application uses TLE.js and JSPredict libraries for SGP-4 predictions. Although the orbits plotted by openmoc match up with commerical sites like https://www.heavens-above.com/ , accuracy of javascript SGP-4 implementations have not been verified. For serious mission planning, it is still recommended to use legacy software like [Gpredict](https://github.com/csete/gpredict)
 
+All of the computation takes place in the client(broswer). This might be changed in the future.
+
 ## Openmoc Currently Supports:
 * Satellite Types(as cataloged by Celestrak)
   * Cubesats
@@ -95,4 +97,6 @@ This application uses TLE.js and JSPredict libraries for SGP-4 predictions. Alth
 * Radio and Rotator Configurations
 * Celsium globe visualization
 * View trajectory of a particular pass
-  
+ 
+## Contact:
+rzli2@illinois.edu

@@ -36,6 +36,9 @@ Clone this repository:
 
 Then perform ```npm install``` in the project folder to install all the node module dependencies(Thanks, javascript). To start the application, do ```npm start``` and go to ```localhost:3000``` in your browser. 
 
+## How it works:
+openMOC acquires satellite two-line-element data from NORAD and Celestrak. Two-Line-Element files can be used with SGP-4 propagations to predict satellite orbit with decent accuracy. 
+
 ## Openmoc Currently Supports:
 * Satellite Types(as cataloged by Celestrak)
   * Cubesats

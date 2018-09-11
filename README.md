@@ -1,5 +1,6 @@
-OpenMOC
+OpenMOC      <img src="https://github.com/Seedarchangel/openmoc/blob/master/public/satellite_icon_mini.png" width="50" height="50">
 =================
+
 OpenMOC is a satellite tracking web application written in ReactJS. It supports visualization of satellite orbits with OpenStreetMaps, future passes and observation angles for satellites directly above you.
 
 [中文文档](https://github.com/Seedarchangel/TuChart/blob/master/Example_Graphs/En_US.md)

@@ -81,10 +81,10 @@ Then perform ```npm install``` in the project folder. To start the application, 
   * Groundstation Coordinate Configuration
   
 * Upcoming Passes
-
-* Passes Timeline
-
+  * Future passes of all selected satellites
+* Passes Calender
 * Sky at a Glance
+  * Viewing angles for satellites above your head
 
 ## TODO:
 * Radio and Rotator Configurations

@@ -11,6 +11,47 @@ import {Map, TileLayer, Marker, Polyline, Tooltip, Circle} from 'react-leaflet';
 import L from 'leaflet'
 import jspredict from 'jspredict'
 import moment from 'moment'
+const categories = {
+"Cubesats": "cubesat.txt",
+"Space Stations": "stations.txt",
+"Beidou": "beidou.txt",
+"Amateur": "amateur.txt",
+"Argos Data Collection System": "argos.txt",
+"Disaster Monitoring": "dmc.txt",
+"Education": "education.txt", 
+"Engineering": "engineering.txt",
+"Galileo": "galileo.txt",
+"Geodetic": "geodetic.txt",
+"Glonass Operational": "glo-ops.txt",
+"GlobalStar": "globalstar.txt",
+"GOES": "goes.txt",
+"Gorizont": "gorizont.txt",
+"Operational GPS": "gps-ops.txt",
+"IntelSat": "intelsat.txt",
+"Iridium Debris": "iridium-33-debris.txt",
+"Iridium Next": "iridium-NEXT.txt",
+"Iridium": "iridium.txt",
+"Military": "military.txt",
+"Molniya": "molniya.txt",
+"Russia LEO Navigation": "musson.txt",
+"Navy Navigation Satellite": "nnss.txt",
+"NOAA": "noaa.txt",
+"Orbcomm": "orbcomm.txt",
+"Other Communication Satellite": "other-comm.txt",
+"Other": "other.txt",
+"PLANET": "planet.txt",
+"Radar Calibration": "radar.txt",
+"Raduga": "raduga.txt",
+"Earth Resources": "resource.txt",
+"Search & Rescue": "sarsat.txt",
+"Space & Earth Science": "science.txt",
+"SES": "ses.txt",
+"Tracking and Data Relay Satellite System (TDRSS)": "tdrss.txt",
+"Last 30 Days' Launches": "tle-new.txt",
+"100 (or so) Brightest": "visual.txt", 
+"Weather": "weather.txt",
+"Experimental": "x-comm.txt"
+}
 
 //import { Viewer, Entity } from "cesium-react";
 //import { Cartesian3 } from "cesium";
@@ -109,7 +150,7 @@ export class SatelliteSelect extends React.Component {
                 //console.log(location)
             //}))
         	axios.get(`http://localhost:8080/api/listcategory`).then(res=>{
-                var namejson = JSON.parse(res.data.categories)
+                var namejson = categories
                 var categoryList = []
                 var options = []
                 for(var names in namejson)
@@ -348,15 +389,6 @@ export class Passes extends React.Component {
       dataIndex="eta"
       key="eta"
     />
-    <Column
-      title="Action"
-      key="action"
-      render={(text, record) => (
-        <span>
-          <Button onClick={this.showModal}>View Pass</Button>
-        </span>
-      )}
-    />
   </Table>
  
   </div>
@@ -372,9 +404,9 @@ export class Location extends React.Component {
 		this.state = {
             location: "",
             visible: false,
-            latitude: 0,
-            longitude: 0,
-            altitude: 0,
+            latitude: 0.0,
+            longitude: 0.0,
+            altitude: 0.0,
             allowchange: false,
         //child: child
 		}
@@ -419,14 +451,17 @@ export class Location extends React.Component {
   }
 
   changeLat(value) {
+    if(typeof(value)=="number")
     this.setState({latitude: value})
   }
 
   changeLong(value) {
+    if(typeof(value)=="number")
     this.setState({longitude: value})
   }
 
   changeAlt(value) {
+    if(typeof(value)=="number")
     this.setState({altitude: value})
   }
 
@@ -447,8 +482,8 @@ export class Location extends React.Component {
         onOk={this.handleOK}
         onCancel={this.handleCancel}
         >
-        Latitude: <InputNumber max={180} min={-180} onChange={this.changeLat} defaultValue={this.state.latitude}/> {"\n"}
-        Longitude:  <InputNumber max={90} min={-90} onChange={this.changeLong} defaultValue={this.state.longitude}/>{"\n"}
+        Latitude: <InputNumber max={90} min={-90} onChange={this.changeLat} defaultValue={this.state.latitude}/> {"\n"}
+        Longitude:  <InputNumber max={180} min={-180} onChange={this.changeLong} defaultValue={this.state.longitude}/>{"\n"}
         Elevation: <InputNumber onChange={this.changeAlt} defaultValue={this.state.altitude}/> {"\n"}
     
         </Modal>
@@ -484,10 +519,11 @@ export class Radar extends React.Component {
     var satInfo = tlejs.getSatelliteInfo(
       tlestring,
       new Date(),
-      gs.latitutde,
+      gs.latitude,
       gs.longitude,
       gs.altitude
     )
+
     if (satInfo.elevation > 0) {
       r.push(satInfo.elevation)
       theta.push(satInfo.azimuth)
@@ -735,7 +771,6 @@ function updateTimelinePasses(tle) {
         var singlepass = {}
         singlepass["id"] = Math.random()
         singlepass["group"] = satNumber
-        singlepass["title"] = "p"
         singlepass["start_time"] = moment(value.start)
         singlepass["end_time"] = moment(value.end)
         data.push(singlepass)
@@ -748,8 +783,7 @@ function updateTimelinePasses(tle) {
     satNumber = satNumber + 1
     
   }
-    console.log(groups)
-    console.log(data)
+
    //{type: 'bar', y: [1, 1, 1], x: [1, 2, 1], base: [0, 2, 5], orientation: "h"}
     this.setState({passes: passes, groups: groups, items: data})
 
@@ -772,7 +806,6 @@ function msToHMS( ms ) {
 }
 
 function updateOSMorbit() {
-    console.log("triggered OSM")
     var tleList = GetSelectedTles()
     var orbits = []
     if(tleList!=[])
@@ -781,12 +814,17 @@ function updateOSMorbit() {
     var tlestring = ""
     var tlearray = tleList[key]
     tlestring = key + "\n" + tlearray[0] + "\n" + tlearray[1]
-    var orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())[1]
-    if(typeof(orbit) == "undefined") {
-      orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())
+    if(Math.round(tlejs.getMeanMotion(tlestring)*100)/100!=1){
+      var orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())[1]
+      if(typeof(orbit) == "undefined") {
+        orbit = tlejs.getGroundTrackLatLng(tlestring, 50000, new Date())
+      }
+      orbits.push(orbit)
     }
-    orbits.push(orbit)
-}
+
+
+}   
+
     this.setState({orbits: orbits})
 }
 }
